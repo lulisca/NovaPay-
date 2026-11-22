@@ -43,9 +43,26 @@ INSERT INTO transacoes (id_cliente, valor, tipo) VALUES (1, 500.00, 'PIX');
 INSERT INTO logs_auditoria (evento) VALUES ('Inicializacao do sistema NovaPay');
 
 -- =====================================================
--- Passo 1: Anatomia & DDL
--- (continuar aqui conforme a equipe avancar na etapa)
+-- Passo 1: Anatomia & DDL - Criacao de Contas e Ciclo de Vida
 -- =====================================================
+
+-- app_backend: aplicacao roda na mesma maquina do banco,
+-- nao deve aceitar conexoes externas (host = localhost)
+CREATE USER 'app_backend'@'localhost' IDENTIFIED BY 'App@Nova2026!';
+
+-- dev_lucas: sub-rede da engenharia, deve trocar a senha no proximo login
+CREATE USER 'dev_lucas'@'192.168.10.%' IDENTIFIED BY 'DevTemp#123';
+ALTER USER 'dev_lucas'@'192.168.10.%' PASSWORD EXPIRE;
+
+-- auditor_ext: auditor externo, conta criada ja bloqueada ate o inicio da auditoria
+CREATE USER 'auditor_ext'@'%' IDENTIFIED BY 'Audit@2026!' ACCOUNT LOCK;
+
+-- estagiario_suporte: conta de suporte interno nivel 1
+CREATE USER 'estagiario_suporte'@'localhost' IDENTIFIED BY 'Sup@2026!';
+
+-- Desafio de validacao: em outro terminal/aba, tentar conectar como auditor_ext
+-- e registrar o codigo de erro retornado (conta bloqueada), depois desbloquear:
+ALTER USER 'auditor_ext'@'%' ACCOUNT UNLOCK;
 
 -- =====================================================
 -- Passo 2: Matriz de Escopos
