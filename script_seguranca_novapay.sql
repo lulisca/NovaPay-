@@ -61,8 +61,8 @@ CREATE USER 'auditor_ext'@'%' IDENTIFIED BY 'Audit@2026!' ACCOUNT LOCK;
 CREATE USER 'estagiario_suporte'@'localhost' IDENTIFIED BY 'Sup@2026!';
 
 -- Desafio de validacao: em outro terminal/aba, tentar conectar como auditor_ext
-evidencias/auditor_ext_bloqueado.png. (salvo na pasta/evidencias)
 -- e registrar o codigo de erro retornado (conta bloqueada), depois desbloquear:
+evidencias/auditor_ext_bloqueado.png. (salvo na pasta/evidencias)
 ALTER USER 'auditor_ext'@'%' ACCOUNT UNLOCK;
 evidencias/auditor_ext_desbloqueado.png  (salvo na pasta/evidencias)
 -- =====================================================
