@@ -148,3 +148,15 @@ SHOW GRANTS FOR 'bi_bruno'@'%';
 -- =====================================================
 -- Passo 4: Auditoria & Entrega
 -- =====================================================
+
+-- Auditoria final das permissoes aplicadas.
+SHOW GRANTS FOR 'estagiario_suporte'@'localhost';
+-- evidencias/estagiario_grants_final.png
+
+SHOW GRANTS FOR 'bi_ana'@'%' USING 'role_analista_bi';
+-- evidencias/bi_ana_grants_role.png
+
+-- Nao usamos FLUSH PRIVILEGES porque os comandos CREATE USER, ALTER USER,
+-- GRANT e REVOKE atualizam imediatamente os privilegios no MySQL.
+-- FLUSH PRIVILEGES seria necessario ao modificar diretamente as tabelas
+-- internas de privilegios do banco mysql, o que nao foi feito neste script.
