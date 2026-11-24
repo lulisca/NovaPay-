@@ -62,12 +62,47 @@ CREATE USER 'estagiario_suporte'@'localhost' IDENTIFIED BY 'Sup@2026!';
 
 -- Desafio de validacao: em outro terminal/aba, tentar conectar como auditor_ext
 -- e registrar o codigo de erro retornado (conta bloqueada), depois desbloquear:
-evidencias/auditor_ext_bloqueado.png. (salvo na pasta/evidencias)
+-- evidencias/auditor_ext_bloqueado.png (salvo na pasta evidencias)
 ALTER USER 'auditor_ext'@'%' ACCOUNT UNLOCK;
-evidencias/auditor_ext_desbloqueado.png  (salvo na pasta/evidencias)
+-- evidencias/auditor_ext_desbloqueado.png (salvo na pasta evidencias)
+
 -- =====================================================
 -- Passo 2: Matriz de Escopos
 -- =====================================================
+
+-- app_backend: le, insere e atualiza clientes e transacoes.
+-- Em logs_auditoria so pode ler e inserir (sem UPDATE/DELETE = logs imutaveis).
+-- Nenhum privilegio estrutural (DROP, ALTER, CREATE).
+GRANT SELECT, INSERT, UPDATE ON novapay_db.clientes TO 'app_backend'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON novapay_db.transacoes TO 'app_backend'@'localhost';
+GRANT SELECT, INSERT ON novapay_db.logs_auditoria TO 'app_backend'@'localhost';
+
+-- estagiario_suporte: seguranca em nivel de coluna (LGPD).
+-- Le apenas id_cliente, nome e telefone (nao ve cpf nem saldo)
+-- e so pode atualizar a coluna telefone.
+GRANT SELECT (id_cliente, nome, telefone), UPDATE (telefone)
+    ON novapay_db.clientes TO 'estagiario_suporte'@'localhost';
+
+-- auditor_ext: somente leitura em todo o banco, sem WITH GRANT OPTION.
+GRANT SELECT ON novapay_db.* TO 'auditor_ext'@'%';
+
+-- dev_lucas: nenhum escopo definido para ele nesta etapa,
+-- entao fica sem privilegios (menor privilegio).
+
+-- Simulacao de incidente: DELETE em transacoes concedido por engano ao app_backend...
+GRANT DELETE ON novapay_db.transacoes TO 'app_backend'@'localhost';
+-- ...e revogado de forma cirurgica (so o DELETE sai, o resto continua).
+REVOKE DELETE ON novapay_db.transacoes FROM 'app_backend'@'localhost';
+
+-- Conferencia: o app_backend nao deve mais ter DELETE em transacoes.
+SHOW GRANTS FOR 'app_backend'@'localhost';
+-- evidencias/app_backend_grants.png (salvo na pasta evidencias)
+
+-- Teste obrigatorio de LGPD (feito em outra conexao, logado como estagiario_suporte):
+-- SELECT * FROM novapay_db.clientes;                          -> falha: ERROR 1142 (SELECT command denied)
+-- evidencias/estagiario_select_negado.png (salvo na pasta evidencias)
+-- SELECT id_cliente, nome, telefone FROM novapay_db.clientes; -> funciona
+-- evidencias/estagiario_select_permitido.png (salvo na pasta evidencias)
 
 -- =====================================================
 -- Passo 3: Roles & Limites
