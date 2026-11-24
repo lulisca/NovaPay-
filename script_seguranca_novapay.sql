@@ -108,6 +108,43 @@ SHOW GRANTS FOR 'app_backend'@'localhost';
 -- Passo 3: Roles & Limites
 -- =====================================================
 
+-- Cria uma role para padronizar os privilegios dos analistas de BI.
+CREATE ROLE 'role_analista_bi';
+
+-- A role pode consultar todas as colunas de transacoes, mas somente
+-- id_cliente e nome em clientes, preservando os demais dados pessoais.
+GRANT SELECT ON novapay_db.transacoes TO 'role_analista_bi';
+GRANT SELECT (id_cliente, nome)
+    ON novapay_db.clientes TO 'role_analista_bi';
+
+-- Cria os dois cientistas de dados com a senha definida no enunciado.
+CREATE USER 'bi_ana'@'%' IDENTIFIED BY 'Bi@Nova2026!';
+CREATE USER 'bi_bruno'@'%' IDENTIFIED BY 'Bi@Nova2026!';
+
+-- Associa a role aos usuarios e a ativa automaticamente em cada login.
+GRANT 'role_analista_bi' TO 'bi_ana'@'%', 'bi_bruno'@'%';
+SET DEFAULT ROLE ALL TO 'bi_ana'@'%', 'bi_bruno'@'%';
+
+-- Protege o servidor contra excesso de conexoes e consultas da conta bi_ana.
+ALTER USER 'bi_ana'@'%' WITH
+    MAX_USER_CONNECTIONS 2
+    MAX_QUERIES_PER_HOUR 100;
+
+-- Conferencias administrativas da configuracao aplicada.
+SHOW GRANTS FOR 'role_analista_bi';
+SHOW GRANTS FOR 'bi_ana'@'%';
+SHOW GRANTS FOR 'bi_bruno'@'%';
+
+-- Testes funcionais (executar em uma nova conexao como bi_ana ou bi_bruno):
+-- SELECT * FROM novapay_db.transacoes;              -> deve funcionar
+-- SELECT id_cliente, nome FROM novapay_db.clientes; -> deve funcionar
+-- SELECT * FROM novapay_db.clientes;                -> deve falhar por restricao de colunas
+
+-- Teste de estresse: abrir simultaneamente duas conexoes como bi_ana e,
+-- sem fecha-las, tentar abrir uma terceira. A terceira deve falhar com:
+-- ERROR 1226: User 'bi_ana' has exceeded the 'max_user_connections' resource.
+-- evidencias/bi_ana_limite_conexoes.png
+
 -- =====================================================
 -- Passo 4: Auditoria & Entrega
 -- =====================================================
