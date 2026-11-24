@@ -14,3 +14,8 @@
 ## Etapa 3: Roles & Limites
 
 - [bi_ana: terceira conexao bloqueada pelo limite de recursos](bi_ana_limite_conexoes.png)
+
+## Etapa 4: Auditoria & Entrega
+
+- [estagiario_suporte: auditoria final dos privilegios](estagiario_grants_final.png)
+- [bi_ana: privilegios efetivos usando role_analista_bi](bi_ana_grants_role.png)
